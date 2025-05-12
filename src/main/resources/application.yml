@@ -1,0 +1,76 @@
+spring:
+    application:
+        name: code-space-editor
+    
+    datasource:
+        url: ${MYSQL_URL}
+        username: ${MYSQL_USERNAME}
+        password: ${MYSQL_PASSWORD}
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        hikari:
+            maximum-pool-size: 20
+            minimum-idle: 5
+            idle-timeout: 30000
+            max-lifetime: 600000
+            connection-timeout: 30000
+            pool-name: HikariCP
+
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                connection:
+                    isolation:
+                        default: 2
+        show-sql: true
+
+    security:
+        jwt:
+            secret-key: ${JWT_SECRET_KEY}
+            expiration: 21600000 # 6 hour in milliseconds
+            refresh-token:
+                expiration: 604800000 # 7 days in milliseconds
+        oauth2:
+            client:
+                registration:
+                    google:
+                        client-id: ${GOOGLE_CLIENT_ID}
+                        client-secret: ${GOOGLE_CLIENT_SECRET}
+                        redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+                        scope: profile, email
+                    github:
+                        client-id: ${GITHUB_CLIENT_ID}
+                        client-secret: ${GITHUB_CLIENT_SECRET}
+                        scope: read:user,user:email
+                        redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+                provider:
+                    github:
+                        authorization-uri: https://github.com/login/oauth/authorize
+                        token-uri: https://github.com/login/oauth/access_token
+                        user-info-uri: https://api.github.com/user
+
+logging:
+    level:
+        root: INFO
+        org:
+            springframework:
+                web: DEBUG
+                security: DEBUG
+            hibernate:
+                SQL: DEBUG
+
+file:
+  storage:
+    root-dir: ${FILE_STORAGE_ROOT_DIR}
+
+code:
+  execution:
+    use-docker: true
+    default-timeout-seconds: 10
+    max-timeout-seconds: 30
+    memory-limit: 100
+    cpu-limit: "0.5"
+    max-output-size: 1048576
+    max-executions-per-minute: 10
+    max-executions-per-hour: 100

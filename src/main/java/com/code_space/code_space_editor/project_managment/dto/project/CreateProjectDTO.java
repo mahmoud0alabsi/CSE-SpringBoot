@@ -1,0 +1,21 @@
+package com.code_space.code_space_editor.project_managment.dto.project;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateProjectDTO {
+    @NotNull(message = "Project name must not be null")
+    @Size(min = 3, max = 100, message = "Project name must be between 3 and 100 characters")
+    private String name;
+
+    @NotNull(message = "Project description must not be null")
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    private String description;
+}
