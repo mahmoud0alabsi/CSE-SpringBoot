@@ -1,72 +1,72 @@
-name: Deploy Backend
+# name: Deploy Backend
 
-on:
-  push:
+# on:
+#   push:
 
-env:
-  IMAGE_NAME: codespace-editor-backend
+# env:
+#   IMAGE_NAME: codespace-editor-backend
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v3
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+#     - name: Log in to Docker Hub
+#       uses: docker/login-action@v2
+#       with:
+#         username: ${{ secrets.DOCKERHUB_USERNAME }}
+#         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build Docker image
-      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }} .
+#     - name: Build Docker image
+#       run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }} .
 
-    - name: Push Docker image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+#     - name: Push Docker image
+#       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
 
-    - name: Prepare SSH Bastion tunnel to Backend
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.BASTION_PRIVATE_KEY }}" | base64 -d > ~/.ssh/bastion.pem
-        chmod 600 ~/.ssh/bastion.pem
+#     - name: Prepare SSH Bastion tunnel to Backend
+#       run: |
+#         mkdir -p ~/.ssh
+#         echo "${{ secrets.BASTION_PRIVATE_KEY }}" | base64 -d > ~/.ssh/bastion.pem
+#         chmod 600 ~/.ssh/bastion.pem
     
-        echo "Host backend" >> ~/.ssh/config
-        echo "  HostName ${{ secrets.BACKEND_PRIVATE_IP }}" >> ~/.ssh/config
-        echo "  User ${{ secrets.BACKEND_USER }}" >> ~/.ssh/config
-        echo "  IdentityFile ~/.ssh/bastion.pem" >> ~/.ssh/config
-        echo "  ProxyCommand ssh -i ~/.ssh/bastion.pem -o StrictHostKeyChecking=no -W %h:%p ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}" >> ~/.ssh/config
+#         echo "Host backend" >> ~/.ssh/config
+#         echo "  HostName ${{ secrets.BACKEND_PRIVATE_IP }}" >> ~/.ssh/config
+#         echo "  User ${{ secrets.BACKEND_USER }}" >> ~/.ssh/config
+#         echo "  IdentityFile ~/.ssh/bastion.pem" >> ~/.ssh/config
+#         echo "  ProxyCommand ssh -i ~/.ssh/bastion.pem -o StrictHostKeyChecking=no -W %h:%p ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}" >> ~/.ssh/config
       
-    - name: Deploy to backend via Bastion
-      run: |
-        ssh -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -i ~/.ssh/bastion.pem \
-            -o ProxyCommand="ssh -i ~/.ssh/bastion.pem -o StrictHostKeyChecking=no -W %h:%p ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}" \
-            ${{ secrets.BACKEND_USER }}@${{ secrets.BACKEND_PRIVATE_IP }} -T << 'EOSSH'
+#     - name: Deploy to backend via Bastion
+#       run: |
+#         ssh -o StrictHostKeyChecking=no \
+#             -o UserKnownHostsFile=/dev/null \
+#             -i ~/.ssh/bastion.pem \
+#             -o ProxyCommand="ssh -i ~/.ssh/bastion.pem -o StrictHostKeyChecking=no -W %h:%p ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}" \
+#             ${{ secrets.BACKEND_USER }}@${{ secrets.BACKEND_PRIVATE_IP }} -T << 'EOSSH'
     
-          set -e
+#           set -e
     
-          cd ~
+#           cd ~
     
-          # Clone or update repo
-          if [ ! -d "backend" ]; then
-            git clone https://github.com/mahmoud0alabsi/CSE-SpringBoot.git backend
-          else
-            cd backend
-            git pull origin main
-            cd ..
-          fi
+#           # Clone or update repo
+#           if [ ! -d "backend" ]; then
+#             git clone https://github.com/mahmoud0alabsi/CSE-SpringBoot.git backend
+#           else
+#             cd backend
+#             git pull origin main
+#             cd ..
+#           fi
     
-          cd backend
+#           cd backend
     
-          # Write .env from secret
-          echo "${{ secrets.ENV_FILE }}" > .env
+#           # Write .env from secret
+#           echo "${{ secrets.ENV_FILE }}" > .env
     
-          # Run Docker Compose (MySQL + Backend)
-          docker compose down || true
-          docker compose pull || true
-          docker compose up -d
+#           # Run Docker Compose (MySQL + Backend)
+#           docker compose down || true
+#           docker compose pull || true
+#           docker compose up -d
     
-        EOSSH
+#         EOSSH
